@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Fitness Tracker</title>
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <div class="livefeed">
-        <video id="pose-video" class="layer" playsinline></video>
+        <video width="100%" height="100%" id="pose-video" playsinline></video>
         <canvas id="pose-canvas"></canvas>
     </div>
 
@@ -17,6 +18,14 @@
 
     <script>
         let net;
+        let openTracking = true;
+        let poses = [];
+        let trackerWrapper;
+        const flipHorizontal = true;
+        // Scale the image. The smaller the faster
+        const imageScaleFactor = 0.75;
+        // Stride, the larger, the smaller the output, the faster
+        const outputStride = 32;
 
         const setupTracker = async () => {
             net = await posenet.load({
@@ -25,17 +34,78 @@
                 inputResolution: { width: 257, height: 200 },
                 quantBytes: 2
             });
-            console.log(net);
+
+            // model = poseDetection.SupportedModels.MoveNet;
+            // detector = await poseDetection.createDetector(model);
             // pose = await net.estimateSinglePose(imageElement, scaleFactor, flipHorizontal, outputStride);
         }
+
+        const setupCamera = async (width, height, fps) => {
+            const constraints = {
+                audio: false,
+                video: {
+                    facingMode: "user",
+                    width: width,
+                    height: height,
+                    frameRate: { max: fps }
+                }
+            }
+
+            video.width = width;
+            video.height = height;
+
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            video.srcObject = stream;
+
+            return new Promise(resolve => {
+                video.onloadedmetadata = () => { resolve(video) }
+            });
+        }
+
+        const updateTracker = async () => {
+            if(net){
+                // poses = await net.estimateSinglePose(video.srcObject);
+                const pose = await net.estimateSinglePose(video,
+                    imageScaleFactor,
+                    flipHorizontal,
+                    outputStride);
+                console.log(pose);
+                // poses = await detector.estimatePoses(image);
+                // console.log(video.srcObject);
+            }
+            // console.log('test');
+            setTimeout(updateTracker, 1000 / 30);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = trackerWrapper.getBoundingClientRect().width;
+            canvas.height = trackerWrapper.getBoundingClientRect().height;
+
+            setupCamera(trackerWrapper.getBoundingClientRect().width, trackerWrapper.getBoundingClientRect().height, 30).then(video => {
+                video.play();
+                video.addEventListener("loadeddata", event => {
+                    console.log("Camera is ready");
+                });
+            });
+            setupTracker();
+        });
     
         window.addEventListener("DOMContentLoaded", () => { 
-            video = document.querySelector("#pose-video");
-
+            trackerWrapper = document.querySelector('.livefeed');
+            video = document.getElementById("pose-video");
             canvas = document.getElementById("pose-canvas");
             ctx = canvas.getContext("2d");
+            canvas.width = trackerWrapper.getBoundingClientRect().width;
+            canvas.height = trackerWrapper.getBoundingClientRect().height;
 
+            setupCamera(trackerWrapper.getBoundingClientRect().width, trackerWrapper.getBoundingClientRect().height, 30).then(video => {
+                video.play();
+                video.addEventListener("loadeddata", event => {
+                    console.log("Camera is ready");
+                });
+            });
             setupTracker();
+            updateTracker();
         });
     </script>
 </body>
