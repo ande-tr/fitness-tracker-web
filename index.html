@@ -7,6 +7,36 @@
     <title>Document</title>
 </head>
 <body>
+    <div class="livefeed">
+        <video id="pose-video" class="layer" playsinline></video>
+        <canvas id="pose-canvas"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+
+    <script>
+        let net;
+
+        const setupTracker = async () => {
+            net = await posenet.load({
+                architecture: 'ResNet50',
+                outputStride: 32,
+                inputResolution: { width: 257, height: 200 },
+                quantBytes: 2
+            });
+            console.log(net);
+            // pose = await net.estimateSinglePose(imageElement, scaleFactor, flipHorizontal, outputStride);
+        }
     
+        window.addEventListener("DOMContentLoaded", () => { 
+            video = document.querySelector("#pose-video");
+
+            canvas = document.getElementById("pose-canvas");
+            ctx = canvas.getContext("2d");
+
+            setupTracker();
+        });
+    </script>
 </body>
 </html>
