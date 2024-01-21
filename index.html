@@ -15,66 +15,26 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
-
+    <script src="/assets/js/setup.js"></script>
+    <script src="/assets/js/drawUtils.js"></script>
     <script>
-        let net;
         let openTracking = true;
         let poses = [];
-        let trackerWrapper;
-        const flipHorizontal = true;
-        // Scale the image. The smaller the faster
-        const imageScaleFactor = 0.75;
-        // Stride, the larger, the smaller the output, the faster
-        const outputStride = 32;
-
-        const setupTracker = async () => {
-            net = await posenet.load({
-                architecture: 'ResNet50',
-                outputStride: 32,
-                inputResolution: { width: 257, height: 200 },
-                quantBytes: 2
-            });
-
-            // model = poseDetection.SupportedModels.MoveNet;
-            // detector = await poseDetection.createDetector(model);
-            // pose = await net.estimateSinglePose(imageElement, scaleFactor, flipHorizontal, outputStride);
-        }
-
-        const setupCamera = async (width, height, fps) => {
-            const constraints = {
-                audio: false,
-                video: {
-                    facingMode: "user",
-                    width: width,
-                    height: height,
-                    frameRate: { max: fps }
-                }
-            }
-
-            video.width = width;
-            video.height = height;
-
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            video.srcObject = stream;
-
-            return new Promise(resolve => {
-                video.onloadedmetadata = () => { resolve(video) }
-            });
-        }
 
         const updateTracker = async () => {
             if(net){
-                // poses = await net.estimateSinglePose(video.srcObject);
-                const pose = await net.estimateSinglePose(video,
-                    imageScaleFactor,
-                    flipHorizontal,
-                    outputStride);
-                console.log(pose);
-                // poses = await detector.estimatePoses(image);
-                // console.log(video.srcObject);
+                const poses = await net.estimateSinglePose(video, imageScaleFactor, flipHorizontal, outputStride);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                poses.keypoints.forEach(keypoint => {
+                    drawKeypoint(keypoint);
+                })
             }
-            // console.log('test');
-            setTimeout(updateTracker, 1000 / 30);
+            else{
+                console.log("Lost connection to motion tracker");
+                setupTracker();
+            }
+            requestAnimationFrame(updateTracker);
         }
 
         window.addEventListener('resize', () => {
@@ -85,27 +45,9 @@
                 video.play();
                 video.addEventListener("loadeddata", event => {
                     console.log("Camera is ready");
+                    setupTracker();
                 });
             });
-            setupTracker();
-        });
-    
-        window.addEventListener("DOMContentLoaded", () => { 
-            trackerWrapper = document.querySelector('.livefeed');
-            video = document.getElementById("pose-video");
-            canvas = document.getElementById("pose-canvas");
-            ctx = canvas.getContext("2d");
-            canvas.width = trackerWrapper.getBoundingClientRect().width;
-            canvas.height = trackerWrapper.getBoundingClientRect().height;
-
-            setupCamera(trackerWrapper.getBoundingClientRect().width, trackerWrapper.getBoundingClientRect().height, 30).then(video => {
-                video.play();
-                video.addEventListener("loadeddata", event => {
-                    console.log("Camera is ready");
-                });
-            });
-            setupTracker();
-            updateTracker();
         });
     </script>
 </body>
