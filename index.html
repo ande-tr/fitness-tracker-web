@@ -15,89 +15,45 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
-    <script src="/assets/js/kalman-filter.js"></script>
+
     <script src="/assets/js/setup.js"></script>
     <script src="/assets/js/drawUtils.js"></script>
+    <script src="/assets/js/poseUtils.js"></script>
     
     <script>
-        let {KalmanFilter} = kalmanFilter;
-        const kFilter = new KalmanFilter({
-            observation: 2
-        });
-
         let previousEstTreshold = 5;
-        let previousEst = [];
+
+        let previousEstX = [];
+        let previousEstY = [];
+
+        for(let i = 0; i < 17; i++){
+            previousEstX.push([]);
+            previousEstY.push([]);
+        }
 
         let openTracking = true;
         let poses = [];
 
+        const calculateAverageOfArray = (arr) => {
+            return arr.reduce((sum, element, index) => sum + (element - sum) / (index + 1), 0);
+        }
+
         const updateTracker = async () => {
-            if(net){
+            if (net) {
                 const poses = await net.estimateSinglePose(video, imageScaleFactor, flipHorizontal, outputStride);
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // if(previousEst.length === previousEstTreshold){
-                    if(previousEst.length === previousEstTreshold){
-                        previousEst.shift();
-                    }
-                    
-                    let tempArray = [];
-
-                    poses.keypoints.forEach((keypoint, index) => {
-                        tempArray.push([keypoint.position.x, keypoint.position.y]);
-                        // previousEst[index].push([keypoint.position.x, keypoint.position.y]);
-                    });
-                    // console.log(previousEst);
-
-                    previousEst.push(tempArray);
-
-                    // let tempInputs = [];
-                    // for(let i = 0; i < previousEstTreshold; i++){
-                    //     for(let j = 0; j < 17; j++){
-                    //         tempInputs[j] = previousEst[i][j];
-                    //     }
-                    // }
-                    console.log(previousEst);
-                
-                    // previousEst.forEach(keypoint => () => {
-
-                    // });
-
-                    // console.log(previousEst);
-
-                    // let tempArray = [];
-
-                    // poses.keypoints.forEach(keypoint => {
-                    //     tempArray.push([keypoint.position.x, keypoint.position.y]);
-                    // });
-                    // previousEst.push(tempArray);
-                
-                    // const filteredValues = kFilter.filterAll(previousEst);
-                    // console.log(previousEst);
-                    // poses.keypoints.forEach(keypoint => {
-                    //     drawKeypoint(keypoint);
-                    // })
-                // }
-            }
-            else{
+                poses.keypoints.forEach((keypoint, index) => {
+                    const keypointObj = calculateKeypointAverage(keypoint, index);
+                    drawKeypoint(keypointObj);
+                });
+            } else {
                 console.log("Lost connection to motion tracker");
                 setupTracker();
             }
+
             requestAnimationFrame(updateTracker);
-        }
-
-        window.addEventListener('resize', () => {
-            canvas.width = trackerWrapper.getBoundingClientRect().width;
-            canvas.height = trackerWrapper.getBoundingClientRect().height;
-
-            setupCamera(trackerWrapper.getBoundingClientRect().width, trackerWrapper.getBoundingClientRect().height, 30).then(video => {
-                video.play();
-                video.addEventListener("loadeddata", event => {
-                    console.log("Camera is ready");
-                    setupTracker();
-                });
-            });
-        });
+        };
     </script>
 </body>
 </html>
