@@ -1,7 +1,13 @@
 function Exercises(){
+
+    //name, 
     return (
         <div className='Exercises'>
-            <h1>Exercises</h1>
+            <header>Exercises</header>
+
+            <div className="content-wrapper">
+                
+            </div>
         </div>
     );
 }
