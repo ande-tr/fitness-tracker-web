@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./pages/Layout";
 import Dashboard from "./pages/Dashboard";
 import Exercises from "./pages/Exercises";
+import CreateExercise from "./pages/CreateExercise";
 
 import './assets/css/style.css';
 
@@ -17,6 +18,7 @@ root.render(
       <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="exercises" element={<Exercises />} />
+        <Route path="createexercise" element={<CreateExercise />} />
       </Route>
     </Routes>
   </BrowserRouter>

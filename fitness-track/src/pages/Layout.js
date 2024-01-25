@@ -25,6 +25,9 @@ const Layout = () => {
           <li>
             <Link to="/exercises">Exercises</Link>
           </li>
+          <li>
+            <Link to="/createexercise">Create Exercise</Link>
+          </li>
         </ul>
       </nav>
     </>
