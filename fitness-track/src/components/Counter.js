@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-function Counter({ onTimerFinish }) {
+function Counter({ onTimerFinish}) {
     const [timer, setTimer] = useState(5);
 
     useEffect(() => {

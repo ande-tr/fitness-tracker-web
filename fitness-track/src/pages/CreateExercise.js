@@ -10,7 +10,7 @@ function CreateExercise(){
     let recordingStarted = false;
     const snapshotInterval = useRef();
     let maxSnapshots = 10;
-
+    let startCounter = false;
     let videoWidth, videoHeight;
 
     const handleRecordingStart = () => {
@@ -32,8 +32,6 @@ function CreateExercise(){
     let poseLandmarker;
     let lastVideoTime = -1;
     let video = null;
-
-    // let startCounter = false;
 
     const setupPrediction = async () => {
         const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
