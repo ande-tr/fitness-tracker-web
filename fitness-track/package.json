@@ -1,7 +1,6 @@
 {
   "name": "fitness-track",
   "version": "0.1.0",
-  "homepage": "https://ande-tr.github.io/fitness-tracker-web/",
   "private": true,
   "dependencies": {
     "@tensorflow-models/posenet": "^2.2.2",
