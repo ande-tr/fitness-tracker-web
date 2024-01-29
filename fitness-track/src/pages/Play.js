@@ -29,76 +29,13 @@ function Play(){
     const maxPoseIndex = exercise.length;
     const possibleCorrectPoses = exercise.length;
 
-    const [currentPoseIndex, setCurrentPoseIndex] = useState(0);
+    let currentPoseIndex = 0;
     let flagExerciseOver = false;
     let exerciseAccuracy = 0;
     let correctPoses = possibleCorrectPoses;
     let poseStartTimeReference = null;
     let elapsedTime = null;
     let lastPoseStatus = false;
-
-    const startExercise = () => {
-        console.log('Counter finished. Starting exercise.');
-        if(isExerciseFirstTime){
-            setIsExerciseFirstTime(false);
-        }
-
-        exerciseAccuracy = 0;
-        correctPoses = possibleCorrectPoses;
-        poseStartTimeReference = null;
-        elapsedTime = null;
-        lastPoseStatus = false;
-
-        setCurrentPoseIndex(0);
-        setStartCounter(false);
-        setRecordingStarted(true);
-        trackPose();
-    }
-
-    const handleExerciseFinish = () => {
-        setStartCounter(false);
-        setRecordingStarted(false);
-        window.cancelAnimationFrame(reqPoseTrack.current);
-
-        console.log('Exercise is finished.');
-
-        if(currentPoseIndex !== maxPoseIndex){
-            if(correctPoses + currentPoseIndex !== possibleCorrectPoses){
-                correctPoses = possibleCorrectPoses - correctPoses - currentPoseIndex + 1;
-            }
-            else{
-                correctPoses = possibleCorrectPoses - correctPoses - currentPoseIndex;
-            }
-        }
-
-        exerciseAccuracy = (correctPoses / possibleCorrectPoses) * 100;
-        console.log("Exercise accuracy: " + exerciseAccuracy + "%");
-    }
-
-    const checkPoseMatch = (recordedAngles, correctAngles, threshold) => {
-        let numberOfCorrectAngles = 13;
-
-        for (let i = 0; i < recordedAngles.length; i++) {
-            const recordedAngle = recordedAngles[i];
-            const correctAngle = correctAngles[i];
-
-            if (Math.abs(recordedAngle - correctAngle) > threshold) {
-                numberOfCorrectAngles--;
-            }
-        }
-        if(numberOfCorrectAngles < 8){
-            console.log('Wrong');
-            lastPoseStatus = false;
-            return false;
-        }
-        else{
-            console.log('Correct');
-            setCurrentPoseIndex(currentPoseIndex + 1);
-            lastPoseStatus = true;
-            elapsedTime = 0;
-            return true;
-        }
-    };
 
     const setupPrediction = async () => {
         const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
@@ -147,52 +84,128 @@ function Play(){
         }
     }, [startCounter]);
 
+    const startExercise = () => {
+        console.log('Counter finished. Starting exercise.');
+        if(isExerciseFirstTime){
+            setIsExerciseFirstTime(false);
+        }
 
-    const trackPose = () => {
-        if(!flagExerciseOver){
-            console.log('in function');
-        let startTimeMs = performance.now();
+        exerciseAccuracy = 0;
+        correctPoses = possibleCorrectPoses;
+        poseStartTimeReference = null;
+        elapsedTime = null;
+        lastPoseStatus = false;
+        currentPoseIndex = 0;
+        setStartCounter(false);
+        setRecordingStarted(true);
+        trackPose();
+    }
 
-        if(videoStream){
-            if(!poseStartTimeReference){
-                poseStartTimeReference = performance.now();
+    const handleExerciseFinish = () => {
+        setStartCounter(false);
+        setRecordingStarted(false);
+        window.cancelAnimationFrame(reqPoseTrack.current);
+
+        console.log('Exercise is finished.');
+
+        if(currentPoseIndex !== maxPoseIndex){
+            if(correctPoses + currentPoseIndex !== possibleCorrectPoses){
+                correctPoses = possibleCorrectPoses - correctPoses - currentPoseIndex + 1;
             }
-
-            if (lastVideoTime !== videoStream.currentTime) {
-                lastVideoTime = videoStream.currentTime;
-
-                if(lastPoseStatus){
-                    poseStartTimeReference = performance.now();
-                }
-    
-                if(elapsedTime >= 1){
-                    elapsedTime = 0;
-                    poseStartTimeReference = performance.now();
-                    correctPoses--;
-                    setCurrentPoseIndex(currentPoseIndex + 1);
-                }
-    
-                poseLandmarker.detectForVideo(videoStream, startTimeMs, (pose) => {
-                    let tempAnglesArray = [];
-                    tempAnglesArray.push(calculateSetOfAngles(pose));
-    
-                    if(currentPoseIndex < maxPoseIndex){
-                        checkPoseMatch(tempAnglesArray[0], exercise[currentPoseIndex], 2);
-                    }
-    
-                    if(currentPoseIndex === maxPoseIndex){
-                        flagExerciseOver = true;                
-                    }
-                });
-    
-                elapsedTime = (performance.now() - poseStartTimeReference) / 1000;
+            else{
+                correctPoses = possibleCorrectPoses - correctPoses - currentPoseIndex;
             }
         }
 
-            reqPoseTrack.current = requestAnimationFrame(trackPose);
+        exerciseAccuracy = Math.abs((correctPoses / possibleCorrectPoses) * 100).toFixed(2);
+        console.log("Exercise accuracy: " + exerciseAccuracy + "%");
+    }
+
+
+    const checkPoseMatch = (recordedAngles, correctAngles, threshold) => {
+        let numberOfCorrectAngles = 13;
+
+        for (let i = 0; i < recordedAngles.length; i++) {
+            const recordedAngle = recordedAngles[i];
+            const correctAngle = correctAngles[i];
+
+            if (Math.abs(recordedAngle - correctAngle) > threshold) {
+                numberOfCorrectAngles--;
+            }
+        }
+        if(numberOfCorrectAngles < 8){
+            return false;
         }
         else{
-            handleExerciseFinish();         
+            console.log('Correct');
+            return true;
+        }
+    };
+
+    const trackPose = () => {
+        if (!flagExerciseOver) {
+            console.log('in function');
+            console.log(currentPoseIndex);
+    
+            let startTimeMs = performance.now();
+    
+            if (videoStream) {
+                if (!poseStartTimeReference) {
+                    poseStartTimeReference = performance.now();
+                }
+    
+                if (lastVideoTime !== videoStream.currentTime) {
+                    lastVideoTime = videoStream.currentTime;
+    
+                    if (lastPoseStatus) {
+                        poseStartTimeReference = performance.now();
+                    }
+    
+                    if (elapsedTime >= 1) {
+                        if (currentPoseIndex < maxPoseIndex - 1) {
+                            elapsedTime = 0;
+                            poseStartTimeReference = performance.now();
+                            correctPoses--;
+                            currentPoseIndex++;
+                        } else {
+                            flagExerciseOver = true;
+                        }
+                    }
+    
+                    poseLandmarker.detectForVideo(videoStream, startTimeMs, (pose) => {
+                        let tempAnglesArray = [];
+                        tempAnglesArray.push(calculateSetOfAngles(pose));
+    
+                        if (currentPoseIndex < maxPoseIndex) {
+                            let matchResult = checkPoseMatch(tempAnglesArray[0], exercise[currentPoseIndex], 2);
+    
+                            if (matchResult) {
+                                console.log('Correct');
+                                if (currentPoseIndex < maxPoseIndex - 1) {
+                                    currentPoseIndex++;
+                                    lastPoseStatus = true;
+                                    elapsedTime = 0;
+                                } else {
+                                    flagExerciseOver = true;
+                                }
+                            } else {
+                                console.log('Wrong');
+                                lastPoseStatus = false;
+                            }
+                        }
+    
+                        if (currentPoseIndex === maxPoseIndex) {
+                            flagExerciseOver = true;
+                        }
+                    });
+    
+                    elapsedTime = (performance.now() - poseStartTimeReference) / 1000;
+                }
+            }
+    
+            reqPoseTrack.current = requestAnimationFrame(trackPose);
+        } else {
+            handleExerciseFinish();
         }
     }
 
