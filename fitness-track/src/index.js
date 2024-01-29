@@ -8,6 +8,7 @@ import Layout from "./pages/Layout";
 import Dashboard from "./pages/Dashboard";
 import Exercises from "./pages/Exercises";
 import CreateExercise from "./pages/CreateExercise";
+import Play from "./pages/Play";
 
 import './assets/css/style.css';
 
@@ -19,6 +20,7 @@ root.render(
         <Route index element={<Dashboard />} />
         <Route path="exercises" element={<Exercises />} />
         <Route path="createexercise" element={<CreateExercise />} />
+        <Route path="play/:exerciseName" element={<Play />} />
       </Route>
     </Routes>
   </BrowserRouter>

@@ -1,8 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { PoseLandmarker, DrawingUtils } from '@mediapipe/tasks-vision';
+import { useNavigate } from 'react-router-dom';
 
-function PoseEditor({poseCoordinates}) {
+function PoseEditor({poseCoordinates, videoWidth, videoHeight}) {
+    const [exerciseName, setExerciseName] = useState("");
+
+    const navigate = useNavigate();
     const canvasRef = useRef(null);
+    const interval = useRef();
+
     let ctx;
     let drawingUtils;
     let index = 0;
@@ -40,25 +46,37 @@ function PoseEditor({poseCoordinates}) {
     useEffect(() => {
         ctx = canvasRef.current.getContext("2d");
         drawingUtils = new DrawingUtils(ctx);
-        console.log(poseCoordinates);
         drawPose();
-    })
 
-    const handleSaveExercise = () => {
-        let tempAnglesArray =[];
+        return () => {
+            window.clearTimeout(interval.current);
+        };
+    }, [])
 
-        poseCoordinates.forEach(pose => {
-            tempAnglesArray.push(calculateSetOfAngles(pose));
-            //landmarks[0][point]
+    const handleSaveExercise = (e) => {
+        e.preventDefault();
+
+        let tempAnglesArray = {};
+        poseCoordinates.forEach((pose, index) => {
+            tempAnglesArray['pose'+index] = calculateSetOfAngles(pose);
         })
-        console.log(tempAnglesArray);
-        localStorage.setItem('exercise', tempAnglesArray);
+
+        // console.log(poseCoordinates);
+
+        if(localStorage.getItem(exerciseName) === null){
+            localStorage.setItem(exerciseName, JSON.stringify(tempAnglesArray));
+            window.clearTimeout(interval.current);
+            navigate('/exercises');
+        }
+        else{
+            alert('The name is already taken!');
+        }
     }
 
     const drawPose = () => {
         const landmarks = poseCoordinates[index].landmarks;
+
         for (const landmark of landmarks) {
-            
             ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
             drawingUtils.drawLandmarks(landmark, {
                 radius: (data) => DrawingUtils.lerp(data.from.z, -0.15, 0.1, 5, 1)
@@ -71,20 +89,21 @@ function PoseEditor({poseCoordinates}) {
         else{
             index++;
         }
-        setTimeout(drawPose, 250);
+        interval.current= setTimeout(drawPose, 250);
+    
     }
 
     return(
         <>
-            <div className='pose-editor'>
-                <div className='pose-editor__title'>Generated Movement</div>
+            <div className='pose-editor-wrapper'>
                 <div className='pose-editor__pose-video'>
-                    <canvas width="200" height="200" ref={canvasRef}></canvas>
+                    <canvas width="500px" height="375px" style={{width: '100%', height: '100%'}} ref={canvasRef}></canvas> 
                 </div>
             </div>
-            <div className='pose-editor__save'>
-                <button onClick={handleSaveExercise}>Save exercise</button>
-            </div>
+            <form name="save-exercise" onSubmit={handleSaveExercise}>
+                <input type="text" value={exerciseName} onChange={(e) => setExerciseName(e.target.value)} className='pose-editor__name' placeholder="Exercise name" required/>
+                <input type="submit" className='button pose-editor__save' value="Save exercise" />
+            </form>
         </>
     );
 }
