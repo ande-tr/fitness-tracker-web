@@ -17,9 +17,15 @@ function Play(){
 
     const reqPoseTrack = useRef();
 
-    let exercise = JSON.parse(localStorage.getItem(exerciseName));
-    exercise = Object.keys(exercise).map(key => exercise[key]);
-    exercise = Object.values(exercise);
+    const exercises = JSON.parse(localStorage.getItem("exercises"));
+    let exercise;
+
+    if (exercises && exercises.hasOwnProperty(exerciseName)) {
+        exercise = Object.values(exercises[exerciseName])[0];
+        exercise = Object.keys(exercise).map(key => exercise[key]);
+    } else {
+        console.log("Exercise not found");
+    }
 
     const webcamRef = useRef(null);
     let poseLandmarker;
@@ -119,6 +125,30 @@ function Play(){
 
         exerciseAccuracy = Math.abs((correctPoses / possibleCorrectPoses) * 100).toFixed(2);
         console.log("Exercise accuracy: " + exerciseAccuracy + "%");
+        
+        setExerciseHistory();
+    }
+
+    const setExerciseHistory = () => {
+        const exerciseDone = {
+            "name": exerciseName,
+            "accuracy": exerciseAccuracy
+        }
+        const historyDate = Date.now();
+
+        if (localStorage.getItem("history") === null) {
+            const history = {
+                [historyDate]: exerciseDone
+            };
+
+            localStorage.setItem("history", JSON.stringify(history));
+        }
+        else{
+            const history = JSON.parse(localStorage.getItem("history"));
+            history[historyDate] = exerciseDone;
+
+            localStorage.setItem("history", JSON.stringify(history));
+        }
     }
 
 

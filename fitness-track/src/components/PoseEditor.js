@@ -61,15 +61,26 @@ function PoseEditor({poseCoordinates, videoWidth, videoHeight}) {
             tempAnglesArray['pose'+index] = calculateSetOfAngles(pose);
         })
 
-        // console.log(poseCoordinates);
+        if (localStorage.getItem("exercises") === null) {
+            const exercises = {
+                [exerciseName]: [tempAnglesArray]
+            };
 
-        if(localStorage.getItem(exerciseName) === null){
-            localStorage.setItem(exerciseName, JSON.stringify(tempAnglesArray));
+            localStorage.setItem("exercises", JSON.stringify(exercises));
             window.clearTimeout(interval.current);
             navigate('/exercises');
         }
         else{
-            alert('The name is already taken!');
+            const exercises = JSON.parse(localStorage.getItem("exercises"));
+            
+            if (exercises.hasOwnProperty(exerciseName)) {
+                alert('The name is already taken!');
+            } else {
+                exercises[exerciseName] = [tempAnglesArray];
+                localStorage.setItem("exercises", JSON.stringify(exercises));
+                window.clearTimeout(interval.current);
+                navigate('/exercises');
+            }
         }
     }
 

@@ -8,8 +8,17 @@ function Exercises(){
     const navigate = useNavigate();
 
     useEffect(() => {
-        const keys = Object.keys(localStorage);
-        setExerciseNames(keys);
+        // const keys = Object.keys(localStorage);
+        // setExerciseNames(keys);
+
+        const exercises = JSON.parse(localStorage.getItem("exercises"));
+
+        if (exercises && typeof exercises === 'object') {
+            const keys = Object.keys(exercises);
+            setExerciseNames(keys);
+        } else {
+            console.log("No exercises found in localStorage");
+        }
     }, []);
 
 
