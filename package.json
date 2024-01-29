@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.9"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.1.1"
   }
 }
