@@ -5,12 +5,13 @@ function SnapshotGallery({poses}) {
 
     useEffect(() => {
         setSnapshots(poses);
+        console.log(poses);
     }, [poses]);
 
     return(
         poses.length > 0 && (
-            <>
-                <div className='snapshot-gallery__title'>Movements</div>
+            <div className='snapshot-gallery-wrapper'>
+                <div className='snapshot-gallery__title'>Snapshots taken:</div>
                 <div className='snapshot-gallery'>
                     {snapshots.length > 0 && (
                         snapshots.map((image, index) => (
@@ -20,7 +21,7 @@ function SnapshotGallery({poses}) {
                         ))
                     )}
                 </div>
-            </>
+            </div>
         )
     );
 }

@@ -1,20 +1,104 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Webcam from 'react-webcam';
+import Counter from '../components/Counter';
 import { FilesetResolver, PoseLandmarker, DrawingUtils } from '@mediapipe/tasks-vision';
+import { useParams } from 'react-router-dom';
+import {calculateSetOfAngles} from '../helpers'
+
 
 function Play(){
-    // I need to send the exercise or routine here in the parameters
+    const { exerciseName } = useParams();
+    const [videoWidth, setVideoWidth] = useState(0);
+    const [videoHeight, setvideoHeight] = useState(0);
+    const [startCounter, setStartCounter] = useState(false);
+    const [videoStream, setVideoStream] = useState();
+    const [recordingStarted, setRecordingStarted] = useState(false);
+    const [isExerciseFirstTime, setIsExerciseFirstTime] = useState(true);
+
+    const reqPoseTrack = useRef();
+
+    let exercise = JSON.parse(localStorage.getItem(exerciseName));
+    exercise = Object.keys(exercise).map(key => exercise[key]);
+    exercise = Object.values(exercise);
 
     const webcamRef = useRef(null);
-    const canvasRef = useRef(null);
-
     let poseLandmarker;
     let lastVideoTime = -1;
-
-    let ctx;
-    let drawingUtils;
-
     let video = null;
+
+    const maxPoseIndex = exercise.length;
+    const possibleCorrectPoses = exercise.length;
+
+    const [currentPoseIndex, setCurrentPoseIndex] = useState(0);
+    let flagExerciseOver = false;
+    let exerciseAccuracy = 0;
+    let correctPoses = possibleCorrectPoses;
+    let poseStartTimeReference = null;
+    let elapsedTime = null;
+    let lastPoseStatus = false;
+
+    const startExercise = () => {
+        console.log('Counter finished. Starting exercise.');
+        if(isExerciseFirstTime){
+            setIsExerciseFirstTime(false);
+        }
+
+        exerciseAccuracy = 0;
+        correctPoses = possibleCorrectPoses;
+        poseStartTimeReference = null;
+        elapsedTime = null;
+        lastPoseStatus = false;
+
+        setCurrentPoseIndex(0);
+        setStartCounter(false);
+        setRecordingStarted(true);
+        trackPose();
+    }
+
+    const handleExerciseFinish = () => {
+        setStartCounter(false);
+        setRecordingStarted(false);
+        window.cancelAnimationFrame(reqPoseTrack.current);
+
+        console.log('Exercise is finished.');
+
+        if(currentPoseIndex !== maxPoseIndex){
+            if(correctPoses + currentPoseIndex !== possibleCorrectPoses){
+                correctPoses = possibleCorrectPoses - correctPoses - currentPoseIndex + 1;
+            }
+            else{
+                correctPoses = possibleCorrectPoses - correctPoses - currentPoseIndex;
+            }
+        }
+
+        exerciseAccuracy = (correctPoses / possibleCorrectPoses) * 100;
+        console.log("Exercise accuracy: " + exerciseAccuracy + "%");
+    }
+
+    const checkPoseMatch = (recordedAngles, correctAngles, threshold) => {
+        let numberOfCorrectAngles = 13;
+
+        for (let i = 0; i < recordedAngles.length; i++) {
+            const recordedAngle = recordedAngles[i];
+            const correctAngle = correctAngles[i];
+
+            if (Math.abs(recordedAngle - correctAngle) > threshold) {
+                numberOfCorrectAngles--;
+            }
+        }
+        if(numberOfCorrectAngles < 8){
+            console.log('Wrong');
+            lastPoseStatus = false;
+            return false;
+        }
+        else{
+            console.log('Correct');
+            setCurrentPoseIndex(currentPoseIndex + 1);
+            lastPoseStatus = true;
+            elapsedTime = 0;
+            return true;
+        }
+    };
 
     const setupPrediction = async () => {
         const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
@@ -23,6 +107,7 @@ function Play(){
             vision,
             {
                 baseOptions: {
+                    // modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task"
                     modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"
                     //pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task<
                     // modelAssetPath: "../models/pose_landmarker_heavy.task"
@@ -30,134 +115,126 @@ function Play(){
                 },
                 runningMode: "VIDEO"
         });
-
-        if (
-          typeof webcamRef.current !== "undefined" &&
-          webcamRef.current !== null &&
-          webcamRef.current.video.readyState === 4
-        ) {
-    
-          ctx = canvasRef.current.getContext("2d");
-          drawingUtils = new DrawingUtils(ctx);
-    
-          video = webcamRef.current.video;
-          const videoWidth = webcamRef.current.video.videoWidth;
-          const videoHeight = webcamRef.current.video.videoHeight;
-    
-          webcamRef.current.video.width = videoWidth;
-          webcamRef.current.video.height = videoHeight;
-
-          trackPose();
-        }
-        else{
-          console.log("Some value is undefined");
-        }
     };
 
+    const setupCamera = () => {
+        if (
+            typeof webcamRef.current !== "undefined" &&
+            webcamRef.current !== null &&
+            webcamRef.current.video.readyState === 4
+          ) {
+          
+            video = webcamRef.current.video;
+
+            setVideoWidth(video.width);
+            setvideoHeight(video.height);
+            
+            video.width = videoWidth;
+            video.height = videoHeight;
+            webcamRef.current.video.width = videoWidth;
+            webcamRef.current.video.height = videoHeight;
+
+            setVideoStream(video)
+          }
+          else{
+            console.log("Some value is undefined");
+          }
+    }
+
     useEffect(() => {
-        setupPrediction();
-    });
+        if(startCounter){
+            setupPrediction();
+        }
+    }, [startCounter]);
 
-    // const calculateKeypointAverage = (keypoint, index) => {
-    //     console.log(keypoint);
-    //     console.log(index);
 
-    //     if(previousEstX[index].length === previousEstTreshold){
-    //         previousEstX[index].shift();
-    //     }
-    //     if(previousEstY[index].length === previousEstTreshold){
-    //         previousEstY[index].shift();
-    //     }
-    
-    //     let tempHolderX = [];
-    //     tempHolderX = previousEstX[index];
-    //     tempHolderX.push(keypoint.x);
-    //     previousEstX[index] = tempHolderX;
-    
-    //     let tempHolderY = [];
-    //     tempHolderY = previousEstY[index];
-    //     tempHolderY.push(keypoint.y);
-    //     previousEstY[index] = tempHolderY;
-    
-    //     const tempX = calculateAverageOfArray(previousEstX[index]);
-    //     const tempY = calculateAverageOfArray(previousEstY[index]);
-    
-    //     return {
-    //         position:{
-    //             x: tempX,
-    //             y: tempY
-    //         }
-    //     }
-    //   }
-    
-    // const calculateAverageOfArray = (arr) => {
-    //     return arr.reduce((sum, element, index) => sum + (element - sum) / (index + 1), 0);
-    // }
-
-    const trackPose = async () => {
+    const trackPose = () => {
+        if(!flagExerciseOver){
+            console.log('in function');
         let startTimeMs = performance.now();
-        
-        if (lastVideoTime !== video.currentTime) {
-            lastVideoTime = video.currentTime;
-            poseLandmarker.detectForVideo(video, startTimeMs, (result) => {
-                // console.log(result);
-                ctx.save();
-                ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
-                for (const landmark of result.landmarks) {
-                    // const keypointObj = calculateKeypointAverage(landmark, index);
+        if(videoStream){
+            if(!poseStartTimeReference){
+                poseStartTimeReference = performance.now();
+            }
 
-                    // console.log(keypointObj);
+            if (lastVideoTime !== videoStream.currentTime) {
+                lastVideoTime = videoStream.currentTime;
 
-                    drawingUtils.drawLandmarks(landmark, {
-                        radius: (data) => DrawingUtils.lerp(data.from.z, -0.15, 0.1, 5, 1)
-                    });
-                    drawingUtils.drawConnectors(landmark, PoseLandmarker.POSE_CONNECTIONS);
+                if(lastPoseStatus){
+                    poseStartTimeReference = performance.now();
                 }
-                ctx.restore();
-            });
+    
+                if(elapsedTime >= 1){
+                    elapsedTime = 0;
+                    poseStartTimeReference = performance.now();
+                    correctPoses--;
+                    setCurrentPoseIndex(currentPoseIndex + 1);
+                }
+    
+                poseLandmarker.detectForVideo(videoStream, startTimeMs, (pose) => {
+                    let tempAnglesArray = [];
+                    tempAnglesArray.push(calculateSetOfAngles(pose));
+    
+                    if(currentPoseIndex < maxPoseIndex){
+                        checkPoseMatch(tempAnglesArray[0], exercise[currentPoseIndex], 2);
+                    }
+    
+                    if(currentPoseIndex === maxPoseIndex){
+                        flagExerciseOver = true;                
+                    }
+                });
+    
+                elapsedTime = (performance.now() - poseStartTimeReference) / 1000;
+            }
         }
 
-        requestAnimationFrame(trackPose);
+            reqPoseTrack.current = requestAnimationFrame(trackPose);
+        }
+        else{
+            handleExerciseFinish();         
+        }
     }
 
     return (
-        <div className='Dashboard'>
-            <header>Dashboard</header>
+        <>
+            <header>{exerciseName}</header>
 
-            <div className="content-wrapper">
-                <Webcam
-                ref={webcamRef}
-                style={{
-                    position: "absolute",
-                    marginLeft: "auto",
-                    marginRight: "auto",
-                    left: 0,
-                    right: 0,
-                    textAlign: "center",
-                    zindex: 9,
-                    width: 640,
-                    height: 480
-                }}
-                />
-                <canvas
-                ref={canvasRef}
-                width="640"
-                height="480"
-                style={{
-                    position: "absolute",
-                    marginLeft: "auto",
-                    marginRight: "auto",
-                    left: 0,
-                    right: 0,
-                    textAlign: "center",
-                    zindex: 9,
-                    width: 640,
-                    height: 480
-                }}
-                />
+            {(!startCounter && !recordingStarted ) && (
+                <div className='timer-placeholder'></div>
+            )}
+
+            {(startCounter || recordingStarted ) && (
+                <Counter onTimerFinish={startExercise} />
+            )}
+            <div className='livefeed-wrapper'>
+                <Webcam ref={webcamRef} className="webcam" onLoadedMetadata={setupCamera}/>
+                <button className='button primary-button create-exercise__record-btn' onClick={() => {
+                    if(!recordingStarted){
+                        setStartCounter(true);
+                    }
+                    if(recordingStarted){
+                        handleExerciseFinish();
+                    }
+                }}>
+                    
+                    {(!startCounter && !recordingStarted) && (
+                        isExerciseFirstTime ? (
+                            'Start exercise'
+                        ):
+                        ( 
+                            'Restart exercise'
+                        )
+                    )}
+                    {(startCounter && !recordingStarted) && (
+                        '...'
+                    )}
+                    {(!startCounter && recordingStarted) && (
+                        'Stop the exercise'
+                    )}
+                </button>
             </div>
-        </div>
+        </>
     );
 }
 

@@ -4,9 +4,12 @@
   },
   "devDependencies": {
     "gh-pages": "^6.1.1"
+<<<<<<< HEAD
   },
   "scripts": {
     "predeploy" : "npm run build",
     "deploy" : "gh-pages -d build"
+=======
+>>>>>>> f8be6ff2a95e14a34f182687a8490a9b67658907
   }
 }
