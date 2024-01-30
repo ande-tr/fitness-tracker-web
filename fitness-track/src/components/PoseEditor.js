@@ -69,10 +69,15 @@ function PoseEditor({poseCoordinates, videoWidth, videoHeight}) {
 
 
         let tempAnglesArray = [];
+
+        console.log(poseCoordinates);
+
         poseCoordinates.forEach((pose, index) => {
-            tempAnglesArray.push({
-                ['pose' + index]: calculateSetOfAngles(pose)
-            });
+            if(pose.landmarks && pose.landmarks.length > 0){
+                tempAnglesArray.push({
+                    ['pose' + index]: calculateSetOfAngles(pose)
+                });
+            }
         });
 
         const exerciseDuration = poseCoordinates[poseCoordinates.length - 1].timestamp - poseCoordinates[0].timestamp;
