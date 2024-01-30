@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { formatTimestamp } from '../helpers'
 
 function Exercises(){
-    // const [exerciseNames, setExerciseNames] = useState([]);
     const [deleteExercise, setDeleteExercise] = useState(null);
 
     const navigate = useNavigate();
@@ -18,16 +17,6 @@ function Exercises(){
             console.log("No exercises found in localStorage");
         }
     }, []);
-    // useEffect(() => {
-    //     const exercises = JSON.parse(localStorage.getItem("exercises"));
-
-    //     if (exercises && Array.isArray(exercises)) {
-    //         const names = exercises.map(exercise => exercise.name);
-    //         setExerciseNames(names);
-    //     } else {
-    //         console.log("No exercises found in localStorage");
-    //     }
-    // }, []);
 
 
     const handleDeleteExercise = (exerciseName) => {
@@ -35,13 +24,6 @@ function Exercises(){
     };
 
     const confirmDeleteExercise = () => {
-        // if (deleteExercise) {
-        //     localStorage.removeItem(deleteExercise);
-        //     setExerciseNames((prevExerciseNames) =>
-        //         prevExerciseNames.filter((name) => name !== deleteExercise)
-        //     );
-        //     setDeleteExercise(null);
-        // }
         if (deleteExercise) {
             const updatedExercises = exercises.filter((exercise) => exercise.name !== deleteExercise);
             localStorage.setItem("exercises", JSON.stringify(updatedExercises));

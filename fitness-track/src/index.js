@@ -10,8 +10,9 @@ import Exercises from "./pages/Exercises";
 import CreateExercise from "./pages/CreateExercise";
 import Play from "./pages/Play";
 import Routines from "./pages/Routines";
-
+import CreateRoutine from './pages/CreateRoutine';
 import './assets/css/style.css';
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -23,6 +24,7 @@ root.render(
         <Route path="createexercise" element={<CreateExercise />} />
         <Route path="play/:exerciseName" element={<Play />} />
         <Route path="routines" element={<Routines />} />
+        <Route path="createroutine" element={<CreateRoutine />} />
       </Route>
     </Routes>
   </BrowserRouter>

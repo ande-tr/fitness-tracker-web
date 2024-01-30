@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { formatTimestamp } from '../helpers'
 
 function Routines(){
     const [routines, setRoutines] = useState();
-
+    const navigate = useNavigate();
+    
     const handleCreateRoutine = () => {
-        console.log('Handle create routine');
+        navigate('/createroutine');
     }
 
     return(
