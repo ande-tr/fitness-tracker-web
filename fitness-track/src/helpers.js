@@ -27,3 +27,13 @@ export const calculateSetOfAngles = (pose) => {
     anglesArray.push(calculateAngleThreePoints(pose.landmarks[0][12], pose.landmarks[0][24], pose.landmarks[0][26]));
     return anglesArray;
 }
+
+export const formatTimestamp = (timestamp) => {
+    const totalSeconds = Math.floor(timestamp / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+
+    const formattedTime = `${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+
+    return formattedTime;
+}

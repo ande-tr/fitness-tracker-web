@@ -55,28 +55,42 @@ function PoseEditor({poseCoordinates, videoWidth, videoHeight}) {
 
     const handleSaveExercise = (e) => {
         e.preventDefault();
+        
+        const calorieBurnRatePerHour = 270; // average calories burned for calisthenics for average person
+        const millisecondsInHour = 3600000;
+        const createdAt = Date.now();
 
-        let tempAnglesArray = {};
+        let tempAnglesArray = [];
         poseCoordinates.forEach((pose, index) => {
-            tempAnglesArray['pose'+index] = calculateSetOfAngles(pose);
-        })
+            tempAnglesArray.push({
+                ['pose' + index]: calculateSetOfAngles(pose)
+            });
+        });
+
+        const exerciseDuration = poseCoordinates[poseCoordinates.length - 1].timestamp - poseCoordinates[0].timestamp;
+        const exerciseDurationInHours = exerciseDuration / millisecondsInHour;
+        const caloriesBurned = calorieBurnRatePerHour * exerciseDurationInHours;
+
+        const newExercise = {
+            'name': exerciseName,
+            'poses': tempAnglesArray,
+            'duration': exerciseDuration,
+            'created-at': createdAt,
+            'calories-burned': caloriesBurned
+        };
 
         if (localStorage.getItem("exercises") === null) {
-            const exercises = {
-                [exerciseName]: [tempAnglesArray]
-            };
-
+            const exercises = [newExercise];
             localStorage.setItem("exercises", JSON.stringify(exercises));
             window.clearTimeout(interval.current);
             navigate('/exercises');
-        }
-        else{
+        } else {
             const exercises = JSON.parse(localStorage.getItem("exercises"));
-            
-            if (exercises.hasOwnProperty(exerciseName)) {
+
+            if (exercises.some(exercise => exercise.name === exerciseName)) {
                 alert('The name is already taken!');
             } else {
-                exercises[exerciseName] = [tempAnglesArray];
+                exercises.push(newExercise);
                 localStorage.setItem("exercises", JSON.stringify(exercises));
                 window.clearTimeout(interval.current);
                 navigate('/exercises');

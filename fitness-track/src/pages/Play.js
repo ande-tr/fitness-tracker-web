@@ -19,12 +19,24 @@ function Play(){
 
     const exercises = JSON.parse(localStorage.getItem("exercises"));
     let exercise;
+    let foundExercise;
+    
+    if (exercises && Array.isArray(exercises)) {
+        foundExercise = exercises.find(ex => ex.name === exerciseName);
 
-    if (exercises && exercises.hasOwnProperty(exerciseName)) {
-        exercise = Object.values(exercises[exerciseName])[0];
-        exercise = Object.keys(exercise).map(key => exercise[key]);
+        if (foundExercise) {
+            exercise = Object.values(foundExercise);
+            exercise = Object.values(exercise[1]);
+            exercise = exercise[1];
+            exercise = Object.values(exercise);
+        
+            console.log(exercise);
+
+        } else {
+            console.log("Exercise not found");
+        }
     } else {
-        console.log("Exercise not found");
+        console.log("No exercises found in localStorage");
     }
 
     const webcamRef = useRef(null);
