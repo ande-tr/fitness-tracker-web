@@ -54,7 +54,7 @@ function CreateRoutine(){
             'poses': combinedPoses,
             'duration': routineDuration,
             'created-at': createdAt,
-            'calories-burned': caloriesBurned
+            'calories-burned': caloriesBurned.toFixed(2)
         };
 
         if (localStorage.getItem("routines") === null) {

@@ -27,7 +27,6 @@ function Play(){
 
     if (exercises && Array.isArray(exercises)) {
         foundExercise = exercises.find(ex => ex.name === exerciseName);
-        // foundExercise = foundExercise.poses;
 
         if(!foundExercise){
             const exercises = JSON.parse(localStorage.getItem("routines"));
@@ -54,7 +53,7 @@ function Play(){
     let currentPoseIndex = 0;
     let flagExerciseOver = false;
     // let exerciseAccuracy = 0;
-    let correctPoses = possibleCorrectPoses;
+    let correctPoses = 0;
     let poseStartTimeReference = null;
     let elapsedTime = null;
     let lastPoseStatus = false;
@@ -120,7 +119,7 @@ function Play(){
         }
 
         setExerciseAccuracy(0);
-        correctPoses = possibleCorrectPoses;
+        correctPoses = 0;
         poseStartTimeReference = null;
         elapsedTime = null;
         lastPoseStatus = false;
@@ -137,17 +136,9 @@ function Play(){
 
         console.log('Exercise is finished.');
 
-        if(currentPoseIndex !== maxPoseIndex){
-            if(correctPoses + currentPoseIndex !== possibleCorrectPoses){
-                correctPoses = possibleCorrectPoses - correctPoses - currentPoseIndex + 1;
-            }
-            else{
-                correctPoses = possibleCorrectPoses - correctPoses - currentPoseIndex;
-            }
-        }
-
         // exerciseAccuracy = Math.abs((correctPoses / possibleCorrectPoses) * 100).toFixed(2);
-        setExerciseAccuracy(Math.abs((correctPoses / possibleCorrectPoses) * 100).toFixed(2));
+        
+        setExerciseAccuracy(((correctPoses / possibleCorrectPoses) * 100).toFixed(2));
         console.log("Exercise accuracy: " + exerciseAccuracy + "%");
         
         setExerciseHistory();
@@ -170,7 +161,7 @@ function Play(){
             "date": historyDate,
             "name": exerciseName,
             "accuracy": exerciseAccuracy,
-            "calories-burned": caloriesBurned
+            "calories-burned": caloriesBurned.toFixed(2)
         }
 
         if (localStorage.getItem("history") === null) {
@@ -204,23 +195,12 @@ function Play(){
             return false;
         }
         else{
-            console.log('Correct');
             return true;
         }
     };
 
     const calculateAccuracy = () => {
-        if(currentPoseIndex !== maxPoseIndex){
-            if(correctPoses + currentPoseIndex !== possibleCorrectPoses){
-                correctPoses = possibleCorrectPoses - correctPoses - currentPoseIndex + 1;
-            }
-            else{
-                correctPoses = possibleCorrectPoses - correctPoses - currentPoseIndex;
-            }
-        }
-
-        // exerciseAccuracy = Math.abs((correctPoses / possibleCorrectPoses) * 100).toFixed(2);
-        setExerciseAccuracy(Math.abs((correctPoses / possibleCorrectPoses) * 100).toFixed(2));
+        setExerciseAccuracy(((correctPoses / possibleCorrectPoses) * 100).toFixed(2));
     }
 
     const trackPose = () => {
@@ -244,7 +224,6 @@ function Play(){
                         if (currentPoseIndex < maxPoseIndex - 1) {
                             elapsedTime = 0;
                             poseStartTimeReference = performance.now();
-                            correctPoses--;
                             currentPoseIndex++;
                         } else {
                             flagExerciseOver = true;
@@ -262,6 +241,7 @@ function Play(){
                                 console.log('Correct');
                                 if (currentPoseIndex < maxPoseIndex - 1) {
                                     currentPoseIndex++;
+                                    correctPoses++;
                                     lastPoseStatus = true;
                                     elapsedTime = 0;
                                 } else {

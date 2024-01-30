@@ -142,7 +142,7 @@ function CreateExercise(){
                 ) : (
                     <>
                         <Webcam ref={webcamRef} className="webcam" onLoadedMetadata={setupCamera}/>
-                        <button className='button primary-button create-exercise__record-btn' onClick={() => {
+                        <button className={(!startCounter && recordingStarted) ? 'button primary-button create-exercise__record-btn is-recording' : 'button primary-button create-exercise__record-btn'} onClick={() => {
                             if(!recordingStarted){
                                 setStartCounter(true);
                             }

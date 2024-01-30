@@ -89,7 +89,7 @@ function PoseEditor({poseCoordinates, videoWidth, videoHeight}) {
             'poses': tempAnglesArray,
             'duration': exerciseDuration,
             'created-at': createdAt,
-            'calories-burned': caloriesBurned
+            'calories-burned': caloriesBurned.toFixed(2)
         };
 
         if (localStorage.getItem("exercises") === null) {
