@@ -11,6 +11,7 @@ import CreateExercise from "./pages/CreateExercise";
 import Play from "./pages/Play";
 import Routines from "./pages/Routines";
 import CreateRoutine from './pages/CreateRoutine';
+import PastDetails from './pages/PastDetails';
 import './assets/css/style.css';
 
 
@@ -25,6 +26,7 @@ root.render(
         <Route path="play/:exerciseName" element={<Play />} />
         <Route path="routines" element={<Routines />} />
         <Route path="createroutine" element={<CreateRoutine />} />
+        <Route path="past" element={<PastDetails />} />
       </Route>
     </Routes>
   </BrowserRouter>

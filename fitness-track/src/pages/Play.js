@@ -23,6 +23,10 @@ function Play(){
     
     if (exercises && Array.isArray(exercises)) {
         foundExercise = exercises.find(ex => ex.name === exerciseName);
+        if(!foundExercise){
+            const exercises = JSON.parse(localStorage.getItem("routines"));
+            foundExercise = exercises.find(ex => ex.name === exerciseName);
+        }
 
         if (foundExercise) {
             exercise = Object.values(foundExercise);
@@ -142,11 +146,23 @@ function Play(){
     }
 
     const setExerciseHistory = () => {
-        const exerciseDone = {
-            "name": exerciseName,
-            "accuracy": exerciseAccuracy
-        }
+        const calorieBurnRatePerHour = 270; // average calories burned for calisthenics for average person
+        const millisecondsInHour = 3600000;
+
+        console.log('Exercise');
+        console.log(exercise);
+
+        const exerciseDuration = exercise[exercise.length - 1].timestamp - exercise[0].timestamp;
+        const exerciseDurationInHours = exerciseDuration / millisecondsInHour;
+        const caloriesBurned = calorieBurnRatePerHour * exerciseDurationInHours;
+
         const historyDate = Date.now();
+        const exerciseDone = {
+            "date": historyDate,
+            "name": exerciseName,
+            "accuracy": exerciseAccuracy,
+            "calories-burned": caloriesBurned
+        }
 
         if (localStorage.getItem("history") === null) {
             const history = {
