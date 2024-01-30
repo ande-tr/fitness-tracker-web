@@ -7,6 +7,7 @@ import {calculateSetOfAngles} from '../helpers'
 
 
 function Play(){
+    const [userData, setUserData] = useState();
     const { exerciseName } = useParams();
     const [videoWidth, setVideoWidth] = useState(0);
     const [videoHeight, setvideoHeight] = useState(0);
@@ -107,6 +108,13 @@ function Play(){
         }
     }, [startCounter]);
 
+    useEffect(() => {
+        const storedUserData = JSON.parse(localStorage.getItem("userData"));
+        if (storedUserData) {
+            setUserData(storedUserData);
+        }
+    }, []);
+
     const startExercise = () => {
         console.log('Counter finished. Starting exercise.');
         if(isExerciseFirstTime){
@@ -147,14 +155,16 @@ function Play(){
     }
 
     const setExerciseHistory = () => {
-        const calorieBurnRatePerHour = 270; // average calories burned for calisthenics for average person
+        let calorieBurnRatePerHour = 270; // average calories burned for calisthenics for average person
         const millisecondsInHour = 3600000;
-
-        console.log('Exercise');
-        console.log(exercise);
-
+        const MET = 3; // avg for calisthenics
         const exerciseDuration = exercise[exercise.length - 1].timestamp - exercise[0].timestamp;
         const exerciseDurationInHours = exerciseDuration / millisecondsInHour;
+
+        if(userData?.currentUserData?.weight){
+            calorieBurnRatePerHour = ((3.5 * MET * userData?.currentUserData?.weight)/200) * 60;
+        }
+
         const caloriesBurned = calorieBurnRatePerHour * exerciseDurationInHours;
 
         const historyDate = Date.now();

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 function PoseEditor({poseCoordinates, videoWidth, videoHeight}) {
     const [exerciseName, setExerciseName] = useState("");
+    const [userData, setUserData] = useState();
 
     const navigate = useNavigate();
     const canvasRef = useRef(null);
@@ -44,6 +45,11 @@ function PoseEditor({poseCoordinates, videoWidth, videoHeight}) {
     }
 
     useEffect(() => {
+        const storedUserData = JSON.parse(localStorage.getItem("userData"));
+        if (storedUserData) {
+            setUserData(storedUserData);
+        }
+        
         ctx = canvasRef.current.getContext("2d");
         drawingUtils = new DrawingUtils(ctx);
         drawPose();
@@ -56,9 +62,11 @@ function PoseEditor({poseCoordinates, videoWidth, videoHeight}) {
     const handleSaveExercise = (e) => {
         e.preventDefault();
         
-        const calorieBurnRatePerHour = 270; // average calories burned for calisthenics for average person
+        let calorieBurnRatePerHour = 270; // average calories burned for calisthenics for average person
         const millisecondsInHour = 3600000;
         const createdAt = Date.now();
+        const MET = 3; // avg for calisthenics
+
 
         let tempAnglesArray = [];
         poseCoordinates.forEach((pose, index) => {
@@ -69,6 +77,11 @@ function PoseEditor({poseCoordinates, videoWidth, videoHeight}) {
 
         const exerciseDuration = poseCoordinates[poseCoordinates.length - 1].timestamp - poseCoordinates[0].timestamp;
         const exerciseDurationInHours = exerciseDuration / millisecondsInHour;
+
+        if(userData?.currentUserData?.weight){
+            calorieBurnRatePerHour = ((3.5 * MET * userData?.currentUserData?.weight)/200) * 60;
+        }
+
         const caloriesBurned = calorieBurnRatePerHour * exerciseDurationInHours;
 
         const newExercise = {

@@ -91,7 +91,7 @@ function Exercises(){
                     ))
                 )}
 
-                {!exercises && (
+                {exercises.length === 0 && (
                     <div className='empty-warning'>
                         <div className='empty-warning__icon'>
                             <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24">
