@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { formatTimestamp } from '../helpers'
 
 function CreateRoutine(){
@@ -16,10 +16,6 @@ function CreateRoutine(){
             console.log("No exercises found in localStorage");
         }
     }, []);
-
-    const isSelected = (exercise) => {
-       return false;
-    }
 
     const toggleExerciseSelection = (exercise) => {
         const isSelected = selectedExercises.some((selected) => selected.name === exercise.name);

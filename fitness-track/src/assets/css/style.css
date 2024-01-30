@@ -326,3 +326,16 @@ header{
     width: 100%;
     height: 100%;
 }
+.exercise__check-box{
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--primary-color);
+    outline: none;
+    background-color: transparent;
+    border-radius: 3px;
+    font-size: 1.1rem;
+}
+.exercise__check-box.selected{
+    background-color: var(--primary-color);
+    color: #f7f7f7;
+}
