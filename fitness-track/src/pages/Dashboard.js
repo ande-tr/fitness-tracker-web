@@ -24,16 +24,27 @@ function Dashboard(){
         console.log('past details');
     }
 
+    const updateUserDetails = () => {
+        console.log('Update details');
+    }
+
     return (
         <div className='Dashboard'>
             <header>Dashboard</header>
             <div className='header__description'>Hello! <br /> Check out your exercising history and update your personal data right from the Dashboard.</div>
 
+            <div className='user-details__header'>
+                <div className='user-history__title'>Your details</div>
+            </div>
             <div className='user-details'>
-                <div className='user-details__weight'>Weight: 50kg</div>
-                <div className='user-details__height'>Height: 1m 59cm</div>
+                <div className='user-details__wrapper'>
+                    <div className='user-details__weight'><span className='semibold-text'>Weight:</span> 50kg</div>
+                    <div className='user-details__height'><span className='semibold-text'>Height:</span> 1m 59cm</div>
+                </div>
+                <button className='button update-btn' onClick={updateUserDetails}>Update details</button>
             </div>
             <a className="user-details__past-btn" href="/past">See past details</a>
+            {/* <button className='button update-btn' onClick={updateUserDetails}>Update details</button> */}
 
             <div className='user-history__title'>Previous workouts</div>
             <div className='calories-burned-week'>

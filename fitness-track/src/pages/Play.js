@@ -14,6 +14,7 @@ function Play(){
     const [videoStream, setVideoStream] = useState();
     const [recordingStarted, setRecordingStarted] = useState(false);
     const [isExerciseFirstTime, setIsExerciseFirstTime] = useState(true);
+    const [isTipClosed, setIsTipClosed] = useState(false);
 
     const reqPoseTrack = useRef();
 
@@ -269,6 +270,17 @@ function Play(){
 
     return (
         <>
+            {!isTipClosed && (
+                <div className='recording-tip'>
+                    <div>
+                        <div className='recording-tip__title'>Important Tip:</div>
+                        <div className='recording-tip__message'>
+                            For best results, position your camera on the floor, facing slightly upwards.
+                        </div>
+                        <button className='button recording-tip__close' onClick={() => {setIsTipClosed(true)}}>Close tip</button>
+                    </div>
+                </div>
+            )}
             <header>{exerciseName}</header>
 
             {(!startCounter && !recordingStarted ) && (

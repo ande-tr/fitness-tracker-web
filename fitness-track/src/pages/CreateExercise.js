@@ -12,6 +12,7 @@ function CreateExercise(){
     const [startCounter, setStartCounter] = useState(false);
     const [videoStream, setVideoStream] = useState();
     const [recordingStarted, setRecordingStarted] = useState(false);
+    const [isTipClosed, setIsTipClosed] = useState(false);
 
     const snapshotInterval = useRef();
     let maxSnapshots = 100;
@@ -113,6 +114,17 @@ function CreateExercise(){
 
     return (
         <>
+            {!isTipClosed && (
+                <div className='recording-tip'>
+                    <div>
+                        <div className='recording-tip__title'>Important Tip:</div>
+                        <div className='recording-tip__message'>
+                            For best results, position your camera on the floor, facing slightly upwards.
+                        </div>
+                        <button className='button recording-tip__close' onClick={() => {setIsTipClosed(true)}}>Close tip</button>
+                    </div>
+                </div>
+            )}
             <header>Record an exercise</header>
             <div className='header__description'>Record exercises and build your list <br />for future fitness sessions.</div>
 

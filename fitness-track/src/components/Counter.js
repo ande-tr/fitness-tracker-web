@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 function Counter({ onTimerFinish}) {
-    const [timer, setTimer] = useState(5);
+    const [timer, setTimer] = useState(15);
     
     useEffect(() => {
         if (timer > 0) {
