@@ -37,7 +37,6 @@ function Exercises(){
     };
 
     const handleSelectExercise = (exerciseName) => {
-        console.log(exerciseName);
         navigate(`/play/${exerciseName}`);
     }
 

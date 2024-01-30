@@ -33,8 +33,6 @@ function CreateRoutine(){
             setRoutineDuration(totalDuration);
             return prevSelected;
         });
-
-        console.log(selectedExercises);
     };
 
     const handleSaveRoutine = (e) => {

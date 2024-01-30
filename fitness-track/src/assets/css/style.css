@@ -181,6 +181,10 @@ header{
     border-radius: 30px;
     transform: translateY(-50%) translateX(-50%);
 }
+.create-exercise__record-btn.is-recording{
+    background-color: var(--red-text);
+    color: var(--font-color-button);
+}
 .pose-editor__pose-video canvas{
     height: 100%;
     width: 100%;
@@ -527,4 +531,10 @@ header{
     display: flex;
     align-items: center;
     justify-content: space-around;
+}
+.live-feedback{
+    font-size: 1.5rem;
+    width: 100%;
+    text-align: center;
+    margin-top: 50px;
 }

@@ -16,28 +16,26 @@ function Play(){
     const [recordingStarted, setRecordingStarted] = useState(false);
     const [isExerciseFirstTime, setIsExerciseFirstTime] = useState(true);
     const [isTipClosed, setIsTipClosed] = useState(false);
+    const [currentExerciseName, setCurrentExerciseName] = useState();
+    const [exerciseAccuracy, setExerciseAccuracy] = useState(0);
 
     const reqPoseTrack = useRef();
 
     const exercises = JSON.parse(localStorage.getItem("exercises"));
     let exercise;
     let foundExercise;
-    
+
     if (exercises && Array.isArray(exercises)) {
         foundExercise = exercises.find(ex => ex.name === exerciseName);
+        // foundExercise = foundExercise.poses;
+
         if(!foundExercise){
             const exercises = JSON.parse(localStorage.getItem("routines"));
             foundExercise = exercises.find(ex => ex.name === exerciseName);
         }
 
         if (foundExercise) {
-            exercise = Object.values(foundExercise);
-            exercise = Object.values(exercise[1]);
-            exercise = exercise[1];
-            exercise = Object.values(exercise);
-        
-            console.log(exercise);
-
+            exercise = foundExercise.poses.map(pose => Object.values(pose)[0]);
         } else {
             console.log("Exercise not found");
         }
@@ -55,7 +53,7 @@ function Play(){
 
     let currentPoseIndex = 0;
     let flagExerciseOver = false;
-    let exerciseAccuracy = 0;
+    // let exerciseAccuracy = 0;
     let correctPoses = possibleCorrectPoses;
     let poseStartTimeReference = null;
     let elapsedTime = null;
@@ -121,7 +119,7 @@ function Play(){
             setIsExerciseFirstTime(false);
         }
 
-        exerciseAccuracy = 0;
+        setExerciseAccuracy(0);
         correctPoses = possibleCorrectPoses;
         poseStartTimeReference = null;
         elapsedTime = null;
@@ -148,7 +146,8 @@ function Play(){
             }
         }
 
-        exerciseAccuracy = Math.abs((correctPoses / possibleCorrectPoses) * 100).toFixed(2);
+        // exerciseAccuracy = Math.abs((correctPoses / possibleCorrectPoses) * 100).toFixed(2);
+        setExerciseAccuracy(Math.abs((correctPoses / possibleCorrectPoses) * 100).toFixed(2));
         console.log("Exercise accuracy: " + exerciseAccuracy + "%");
         
         setExerciseHistory();
@@ -158,8 +157,7 @@ function Play(){
         let calorieBurnRatePerHour = 270; // average calories burned for calisthenics for average person
         const millisecondsInHour = 3600000;
         const MET = 3; // avg for calisthenics
-        const exerciseDuration = exercise[exercise.length - 1].timestamp - exercise[0].timestamp;
-        const exerciseDurationInHours = exerciseDuration / millisecondsInHour;
+        const exerciseDurationInHours = foundExercise.duration / millisecondsInHour;
 
         if(userData?.currentUserData?.weight){
             calorieBurnRatePerHour = ((3.5 * MET * userData?.currentUserData?.weight)/200) * 60;
@@ -211,10 +209,22 @@ function Play(){
         }
     };
 
+    const calculateAccuracy = () => {
+        if(currentPoseIndex !== maxPoseIndex){
+            if(correctPoses + currentPoseIndex !== possibleCorrectPoses){
+                correctPoses = possibleCorrectPoses - correctPoses - currentPoseIndex + 1;
+            }
+            else{
+                correctPoses = possibleCorrectPoses - correctPoses - currentPoseIndex;
+            }
+        }
+
+        // exerciseAccuracy = Math.abs((correctPoses / possibleCorrectPoses) * 100).toFixed(2);
+        setExerciseAccuracy(Math.abs((correctPoses / possibleCorrectPoses) * 100).toFixed(2));
+    }
+
     const trackPose = () => {
         if (!flagExerciseOver) {
-            console.log('in function');
-            console.log(currentPoseIndex);
     
             let startTimeMs = performance.now();
     
@@ -261,6 +271,7 @@ function Play(){
                                 console.log('Wrong');
                                 lastPoseStatus = false;
                             }
+                            calculateAccuracy();
                         }
     
                         if (currentPoseIndex === maxPoseIndex) {
@@ -302,7 +313,7 @@ function Play(){
             )}
             <div className='livefeed-wrapper'>
                 <Webcam ref={webcamRef} className="webcam" onLoadedMetadata={setupCamera}/>
-                <button className='button primary-button create-exercise__record-btn' onClick={() => {
+                <button className={(!startCounter && recordingStarted) ? 'button primary-button create-exercise__record-btn is-recording' : 'button primary-button create-exercise__record-btn'} onClick={() => {
                     if(!recordingStarted){
                         setStartCounter(true);
                     }
@@ -327,6 +338,8 @@ function Play(){
                     )}
                 </button>
             </div>
+
+            <div className='live-feedback'>Accuracy: {exerciseAccuracy}%</div>
         </>
     );
 }

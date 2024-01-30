@@ -5,7 +5,6 @@ function SnapshotGallery({poses}) {
 
     useEffect(() => {
         setSnapshots(poses);
-        console.log(poses);
     }, [poses]);
 
     return(
