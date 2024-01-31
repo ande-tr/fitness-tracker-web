@@ -70,8 +70,6 @@ function PoseEditor({poseCoordinates, videoWidth, videoHeight}) {
 
         let tempAnglesArray = [];
 
-        console.log(poseCoordinates);
-
         poseCoordinates.forEach((pose, index) => {
             if(pose.landmarks && pose.landmarks.length > 0){
                 tempAnglesArray.push({
